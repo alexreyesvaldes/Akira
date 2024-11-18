@@ -1,0 +1,23 @@
+[2024-11-17 13:52:25] admin: Inicio de sesión exitoso
+[2024-11-17 14:06:25] admin: Cierre de sesión
+[2024-11-17 14:08:58] admin: Inicio de sesión exitoso
+[2024-11-17 14:24:03] admin: Reporte exportado
+[2024-11-17 14:25:52] admin: Reporte exportado
+[2024-11-17 14:32:47] admin: Reporte exportado
+[2024-11-17 14:34:21] admin: Reporte exportado
+[2024-11-17 16:36:43] admin: Reporte exportado
+[2024-11-17 17:08:48] admin: Reporte exportado
+[2024-11-17 18:15:54] admin: Error al actualizar inventario
+[2024-11-17 18:17:51] admin: Error al actualizar inventario
+[2024-11-17 18:19:12] admin: Error al actualizar inventario
+[2024-11-17 18:21:34] admin: Error al actualizar inventario
+[2024-11-17 18:36:17] admin: Error al actualizar inventario
+[2024-11-17 18:39:15] admin: Reporte exportado
+[2024-11-17 18:42:18] admin: Cierre de sesión
+[2024-11-17 18:42:25] admin: Intento fallido de inicio de sesión
+[2024-11-17 18:42:35] admin: Inicio de sesión exitoso
+[2024-11-17 20:05:33] admin: Cierre de sesión
+[2024-11-18 08:11:59] admin: Inicio de sesión exitoso
+[2024-11-18 08:12:41] admin: Reporte exportado
+[2024-11-18 08:15:13] admin: Cierre de sesión
+[2024-11-18 08:15:26] admin: Inicio de sesión exitoso

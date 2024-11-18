@@ -1,0 +1,556 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Akira - Gestión de Productos</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css">
+    <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script> <!-- Íconos -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        /* Estilos mejorados */
+        body {
+            font-size: 0.85rem;
+            background-color: #f8f9fa; /* Color de fondo suave */
+        }
+        .navbar {
+            background: linear-gradient(90deg, #1a73e8, #4285f4);
+            padding: 0.4rem; /* Ajustar padding para compacidad */
+        }
+        .navbar-brand {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #fff !important;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+            flex-grow: 1;
+            text-align: center;
+        }
+        .navbar-nav .nav-link {
+            font-size: 0.85rem;
+            padding: 0.5rem;
+            font-weight: 500;
+            color: #fff !important;
+        }
+        .btn-logout {
+            font-size: 0.85rem;
+            color: #fff;
+            background-color: #f44336;
+            border: none;
+            padding: 0.4rem 0.8rem;
+            border-radius: 4px;
+            transition: background-color 0.3s ease;
+        }
+        .btn-logout:hover {
+            background-color: #d32f2f;
+        }
+        .card {
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            margin-bottom: 1rem;
+        }
+        .card-header {
+            font-size: 1rem;
+            font-weight: bold;
+            background: #1a73e8;
+            color: #fff;
+            padding: 0.6rem;
+        }
+        .card-body {
+            padding: 0.8rem;
+        }
+        h3, h5 {
+            font-size: 1rem;
+            font-weight: bold;
+            color: #343a40;
+        }
+        .form-control {
+            font-size: 0.9rem;
+            padding: 0.4rem 0.6rem;
+        }
+        .btn-primary, .btn-secondary {
+            font-size: 0.85rem;
+            padding: 0.4rem 0.6rem;
+        }
+        .table {
+            font-size: 0.85rem;
+        }
+        .table th {
+            font-size: 0.85rem;
+            background: #1a73e8;
+            color: #fff;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+    </style>
+</head>
+<body>
+    <!-- Barra de navegación -->
+    <nav class="navbar navbar-expand-lg">
+        <div class="container-fluid d-flex align-items-center">
+            <ul class="navbar-nav me-auto">
+                <li class="nav-item">
+                    <a class="nav-link active" href="#productos"><i class="fas fa-box"></i> Productos</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#graficos"><i class="fas fa-chart-bar"></i> Gráficos</a>
+                </li>
+            </ul>
+            <a class="navbar-brand" href="#">
+                <i class="fas fa-star"></i> Akira
+            </a>
+            <button class="btn btn-logout ms-auto" onclick="window.location.href='/logout'">
+                <i class="fas fa-sign-out-alt"></i> Cerrar Sesión
+            </button>
+        </div>
+    </nav>
+</body>
+</html>
+
+    <!-- Contenido principal -->
+    <div class="container mt-2">
+        <!-- Filtros -->
+        <div class="card shadow-sm">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="fas fa-filter"></i> Gestión de Productos</h5>
+                <small>Use los filtros para buscar productos</small>
+            </div>
+            <div class="card-body">
+                <form id="filterForm" class="row g-2">
+                    <div class="col-md-4">
+                        <label for="filterName" class="form-label"><i class="fas fa-search"></i> Nombre</label>
+                        <input type="text" id="filterName" class="form-control form-control-sm" placeholder="Ejemplo: Akaza">
+                    </div>
+                    <div class="col-md-4">
+                        <label for="filterStock" class="form-label"><i class="fas fa-boxes"></i> Existencia</label>
+                        <input type="number" id="filterStock" class="form-control form-control-sm" placeholder="Mínimo">
+                    </div>
+                    <div class="col-md-4">
+                        <label for="filterPriceMin" class="form-label"><i class="fas fa-dollar-sign"></i> Precio Mínimo</label>
+                        <input type="number" id="filterPriceMin" class="form-control form-control-sm" placeholder="Ejemplo: 50">
+                    </div>
+                    <div class="col-12 text-end">
+                        <button type="button" id="applyFilters" class="btn btn-primary btn-sm">
+                            <i class="fas fa-check"></i> Aplicar Filtros
+                        </button>
+                        <button type="reset" id="resetFilters" class="btn btn-secondary btn-sm">
+                            <i class="fas fa-undo"></i> Restablecer
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Tabla de Productos -->
+        <div class="card shadow-sm">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h3 class="mb-0"><i class="fas fa-box"></i> Productos Existentes</h3>
+                <a href="/export_excel" class="btn btn-light btn-sm">
+                    <i class="fas fa-file-excel text-success"></i> Exportar a Excel
+                </a>
+            </div>
+            <div class="card-body">
+                <table class="table table-hover table-striped table-bordered">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Título</th>
+                            <th>Precio</th>
+                            <th>SKU</th>
+                            <th>Existencia</th>
+                        </tr>
+                    </thead>
+                    <tbody id="productsTableBody">
+                        <!-- Datos dinámicos renderizados desde Flask -->
+                        {% for product in products %}
+                        <tr>
+                            <td>{{ product.id }}</td>
+                            <td>{{ product.title }}</td>
+                            <td>${{ product.variants[0].price }}</td>
+                            <td>{{ product.variants[0].sku }}</td>
+                            <td>{{ product.variants[0].available or 0 }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
+
+<!-- Subir Productos desde Excel -->
+<div class="card shadow-sm mt-3" style="max-width: 350px; margin: auto;">
+    <div class="card-header bg-primary text-white text-center py-2">
+        <h6 class="mb-0"><i class="fas fa-file-upload"></i> Subir Excel</h6>
+    </div>
+    <div class="card-body py-2 px-3">
+        <form id="uploadExcelForm">
+            <div class="mb-2">
+                <label for="excelFile" class="form-label small"><i class="fas fa-file-excel text-success"></i> Seleccionar Archivo</label>
+                <input type="file" id="excelFile" name="file" class="form-control form-control-sm" accept=".xlsx" required>
+            </div>
+            <div class="text-center mt-2">
+                <button type="submit" class="btn btn-primary btn-sm">
+                    <i class="fas fa-upload"></i> Subir
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    // Manejador del formulario para subir Excel
+    document.getElementById('uploadExcelForm').addEventListener('submit', async function (e) {
+        e.preventDefault();
+
+        const fileInput = document.getElementById('excelFile');
+        if (!fileInput.files.length) {
+            alert('Por favor, selecciona un archivo Excel');
+            return;
+        }
+
+        const formData = new FormData();
+        formData.append('file', fileInput.files[0]);
+
+        try {
+            const response = await fetch('/upload_excel', {
+                method: 'POST',
+                body: formData
+            });
+
+            const result = await response.json();
+            if (response.ok) {
+                alert(result.message);
+                location.reload();
+            } else {
+                alert(`Error: ${result.message}`);
+            }
+        } catch (error) {
+            alert(`Error al subir el archivo: ${error.message}`);
+        }
+    });
+</script>
+
+
+<!-- Crear Producto Manualmente -->
+<div class="card shadow-sm mt-4">
+    <div class="card-header bg-success text-white d-flex justify-content-between align-items-center">
+        <h5 class="mb-0"><i class="fas fa-plus-circle"></i> Crear Producto Manualmente</h5>
+        <small class="text-light">Complete todos los campos para agregar un nuevo producto</small>
+    </div>
+    <div class="card-body">
+        <form id="createProductForm">
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label for="title" class="form-label"><i class="fas fa-tag"></i> Título</label>
+                    <input type="text" id="title" class="form-control" placeholder="Ejemplo: Playera Akaza" required>
+                </div>
+                <div class="col-md-6">
+                    <label for="sku" class="form-label"><i class="fas fa-barcode"></i> SKU</label>
+                    <input type="text" id="sku" class="form-control" placeholder="Ejemplo: SKU123" required>
+                </div>
+                <div class="col-md-4">
+                    <label for="price" class="form-label"><i class="fas fa-dollar-sign"></i> Precio</label>
+                    <input type="number" id="price" class="form-control" placeholder="Ejemplo: 300.00" required min="1" step="0.01">
+                </div>
+                <div class="col-md-4">
+                    <label for="inventory_quantity" class="form-label"><i class="fas fa-boxes"></i> Existencia</label>
+                    <input type="number" id="inventory_quantity" class="form-control" placeholder="Ejemplo: 50" required min="0">
+                </div>
+                <div class="col-md-4">
+                    <label for="description" class="form-label"><i class="fas fa-info-circle"></i> Descripción</label>
+                    <textarea id="description" class="form-control" placeholder="Ejemplo: Playera deportiva" rows="1"></textarea>
+                </div>
+            </div>
+            <div class="text-end mt-3">
+                <button type="submit" class="btn btn-success">
+                    <i class="fas fa-save"></i> Crear Producto
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    document.getElementById('createProductForm').addEventListener('submit', async function (e) {
+        e.preventDefault(); // Prevenir el comportamiento predeterminado del formulario
+
+        // Obtener valores de los campos del formulario
+        const title = document.getElementById('title').value.trim();
+        const sku = document.getElementById('sku').value.trim();
+        const price = parseFloat(document.getElementById('price').value);
+        const inventory_quantity = parseInt(document.getElementById('inventory_quantity').value);
+        const description = document.getElementById('description').value.trim();
+
+        // Validar campos
+        if (!title || !sku || isNaN(price) || isNaN(inventory_quantity)) {
+            alert('Por favor, completa todos los campos correctamente.');
+            return;
+        }
+
+        try {
+            // Realizar la solicitud al backend
+            const response = await fetch('/create_product', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    title,
+                    sku,
+                    price,
+                    inventory_quantity,
+                    description,
+                }),
+            });
+
+            const result = await response.json();
+
+            // Manejar la respuesta
+            if (response.ok) {
+                alert(result.message || 'Producto creado exitosamente.');
+                location.reload(); // Recargar la página
+            } else {
+                console.error('Error del servidor:', result);
+                alert(result.message || 'Error al crear el producto.');
+            }
+        } catch (error) {
+            console.error('Error al enviar la solicitud:', error);
+            alert('Hubo un error al procesar la solicitud.');
+        }
+    });
+</script>
+
+
+<!-- Gráficos -->
+<div class="container mt-5" id="graficos">
+    <h3 class="text-center text-primary mb-4"><i class="fas fa-chart-bar"></i> Gráficos de Productos</h3>
+    <div class="card shadow-sm">
+        <div class="card-header bg-primary text-white">
+            <h5 class="mb-0"><i class="fas fa-chart-area"></i> Comparativa: Precios y Existencias</h5>
+        </div>
+        <div class="card-body" style="height: 500px;"> <!-- Contenedor con altura definida -->
+            <canvas id="productChart" style="width: 100%; height: 100%;"></canvas> <!-- Tamaño del canvas -->
+        </div>
+    </div>
+</div>
+
+<script>
+    // Datos dinámicos desde Flask
+    const products = {{ products | tojson | safe }}; // Datos desde el backend
+    const labels = products.map(product => product.title); // Nombres de productos
+    const prices = products.map(product => parseFloat(product.variants[0].price)); // Precios de los productos
+    const stocks = products.map(product => product.variants[0].available || 0); // Existencias de los productos
+
+    // Configuración del gráfico
+    const ctx = document.getElementById('productChart').getContext('2d');
+    const productChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: labels, // Etiquetas para el eje X
+            datasets: [
+                {
+                    label: 'Precios ($)',
+                    data: prices,
+                    backgroundColor: 'rgba(54, 162, 235, 0.7)', // Azul para precios
+                    borderColor: 'rgba(54, 162, 235, 1)',
+                    borderWidth: 1,
+                    yAxisID: 'y',
+                },
+                {
+                    label: 'Existencias',
+                    data: stocks,
+                    backgroundColor: 'rgba(75, 192, 192, 0.7)', // Verde para existencias
+                    borderColor: 'rgba(75, 192, 192, 1)',
+                    borderWidth: 1,
+                    yAxisID: 'y1',
+                },
+            ],
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false, // Ajustar al contenedor
+            plugins: {
+                legend: {
+                    position: 'top', // Leyenda en la parte superior
+                    labels: {
+                        font: {
+                            size: 14, // Tamaño de la fuente en la leyenda
+                        },
+                        padding: 20, // Espaciado alrededor de las etiquetas de la leyenda
+                    },
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function (context) {
+                            const value = context.raw;
+                            if (context.dataset.label === 'Precios ($)') {
+                                return context.dataset.label + ': $' + value.toFixed(2);
+                            }
+                            return context.dataset.label + ': ' + value + ' unidades';
+                        },
+                    },
+                },
+            },
+            scales: {
+                y: {
+                    type: 'linear',
+                    position: 'left',
+                    title: {
+                        display: true,
+                        text: 'Precios ($)',
+                        font: {
+                            size: 14,
+                            weight: 'bold',
+                        },
+                    },
+                    ticks: {
+                        callback: function (value) {
+                            return '$' + value;
+                        },
+                    },
+                    grid: {
+                        color: 'rgba(54, 162, 235, 0.2)',
+                    },
+                },
+                y1: {
+                    type: 'linear',
+                    position: 'right',
+                    title: {
+                        display: true,
+                        text: 'Existencias (unidades)',
+                        font: {
+                            size: 14,
+                            weight: 'bold',
+                        },
+                    },
+                    grid: {
+                        drawOnChartArea: false, // Ocultar líneas de cuadrícula para este eje
+                    },
+                },
+                x: {
+                    title: {
+                        display: true,
+                        text: 'Productos',
+                        font: {
+                            size: 14,
+                            weight: 'bold',
+                        },
+                    },
+                    ticks: {
+                        maxRotation: 45, // Rotación máxima de etiquetas
+                        minRotation: 0,
+                    },
+                },
+            },
+        },
+    });
+</script>
+
+
+<script>
+    // Variables globales
+    const allProducts = {{ products | tojson | safe }}; // Productos desde el backend
+    const productTableBody = document.getElementById('productsTableBody'); // Cuerpo de la tabla
+    const productTableSection = document.getElementById('productTable'); // Sección de la tabla (asegúrate de que tenga el ID correcto)
+
+    /**
+     * Función para aplicar los filtros.
+     * Filtra los productos en base a los criterios ingresados y actualiza la tabla.
+     */
+    function applyFilters() {
+        const filterName = document.getElementById('filterName').value.toLowerCase();
+        const filterStock = parseInt(document.getElementById('filterStock').value) || 0;
+        const filterPriceMin = parseFloat(document.getElementById('filterPriceMin').value) || 0;
+
+        // Filtrar productos
+        const filteredProducts = allProducts.filter(product => {
+            const name = product.title.toLowerCase();
+            const stock = product.variants[0].available || 0;
+            const price = parseFloat(product.variants[0].price);
+
+            return (
+                (!filterName || name.includes(filterName)) && // Filtro por nombre
+                stock >= filterStock &&                      // Filtro por existencia mínima
+                price >= filterPriceMin                      // Filtro por precio mínimo
+            );
+        });
+
+        // Actualizar tabla con los resultados filtrados y desplazarse automáticamente
+        updateTable(filteredProducts);
+        scrollToTable();
+    }
+
+    /**
+     * Función para actualizar la tabla con productos filtrados.
+     * Si no hay resultados, muestra un mensaje en la tabla.
+     */
+    function updateTable(filteredProducts) {
+        productTableBody.innerHTML = ''; // Limpiar contenido actual de la tabla
+
+        if (filteredProducts.length === 0) {
+            // Mostrar mensaje cuando no hay productos que coincidan con los filtros
+            productTableBody.innerHTML = `
+                <tr>
+                    <td colspan="5" class="text-center text-muted">No se encontraron productos con los filtros aplicados.</td>
+                </tr>
+            `;
+            return;
+        }
+
+        // Crear filas dinámicamente para cada producto filtrado
+        filteredProducts.forEach(product => {
+            const row = `
+                <tr>
+                    <td>${product.id}</td>
+                    <td>${product.title}</td>
+                    <td>$${parseFloat(product.variants[0].price).toFixed(2)}</td>
+                    <td>${product.variants[0].sku}</td>
+                    <td>${product.variants[0].available || 0}</td>
+                </tr>
+            `;
+            productTableBody.innerHTML += row;
+        });
+    }
+
+    /**
+     * Función para desplazarse automáticamente a la tabla de productos.
+     * Se utiliza scroll suave para una mejor experiencia de usuario.
+     */
+    function scrollToTable() {
+        if (productTableSection) {
+            productTableSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+    }
+
+    /**
+     * Función para resetear los filtros y mostrar todos los productos.
+     */
+    function resetFilters() {
+        // Restaurar todos los productos en la tabla
+        updateTable(allProducts);
+
+        // Limpiar los campos de filtro
+        document.getElementById('filterForm').reset();
+    }
+
+    // Listeners para los botones de filtros
+    document.getElementById('applyFilters').addEventListener('click', applyFilters); // Botón de aplicar filtros
+    document.getElementById('resetFilters').addEventListener('click', resetFilters); // Botón de resetear filtros
+
+    /**
+     * Inicializar tabla con todos los productos al cargar la página.
+     */
+    document.addEventListener('DOMContentLoaded', () => {
+        updateTable(allProducts); // Mostrar todos los productos inicialmente
+    });
+</script>
+
+
+
+
+
+
+
