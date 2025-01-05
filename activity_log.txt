@@ -21,3 +21,25 @@
 [2024-11-18 08:12:41] admin: Reporte exportado
 [2024-11-18 08:15:13] admin: Cierre de sesión
 [2024-11-18 08:15:26] admin: Inicio de sesión exitoso
+[2024-12-15 16:02:59] admin: Intento fallido de inicio de sesión
+[2024-12-15 16:03:55] admin: Inicio de sesión exitoso
+[2024-12-22 15:31:49] admin: Cierre de sesión
+[2024-12-22 15:31:52] admin: Inicio de sesión exitoso
+[2024-12-22 15:39:54] admin: Cierre de sesión
+[2024-12-22 15:39:57] admin: Inicio de sesión exitoso
+[2024-12-22 15:42:51] admin: Cierre de sesión
+[2024-12-22 15:42:57] admin: Inicio de sesión exitoso
+[2024-12-22 15:45:37] admin: Cierre de sesión
+[2024-12-22 16:00:04] admin: Inicio de sesión exitoso
+[2024-12-22 16:03:24] admin: Cierre de sesión
+[2024-12-22 16:03:25] admin: Inicio de sesión exitoso
+[2024-12-22 16:15:11] admin: Cierre de sesión
+[2024-12-22 16:15:13] admin: Inicio de sesión exitoso
+[2024-12-22 16:27:34] admin: Cierre de sesión
+[2024-12-22 16:27:35] admin: Inicio de sesión exitoso
+[2024-12-22 17:01:00] admin: Reporte exportado
+[2024-12-22 17:02:07] admin: Cierre de sesión
+[2024-12-22 17:02:12] admin: Inicio de sesión exitoso
+[2024-12-22 17:13:46] admin: Reporte exportado
+[2024-12-28 17:13:18] admin: Cierre de sesión
+[2024-12-28 17:13:20] admin: Inicio de sesión exitoso

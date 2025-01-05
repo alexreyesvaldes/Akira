@@ -5,108 +5,167 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Akira - Gestión de Productos</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css">
-    <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script> <!-- Íconos -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='aos/dist/aos.css') }}">
+    <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+    <script src="{{ url_for('static', filename='chart.js/dist/chart.umd.js') }}"></script>
+    <script src="{{ url_for('static', filename='aos/dist/aos.js') }}"></script>
+    <script src="{{ url_for('static', filename='sweetalert2/dist/sweetalert2.all.min.js') }}"></script>
+
     <style>
-        /* Estilos mejorados */
         body {
-            font-size: 0.85rem;
-            background-color: #f8f9fa; /* Color de fondo suave */
+            font-size: 0.9rem;
+            background: linear-gradient(135deg, #2c3e50, #4ca1af);
+            color: #fff;
+            min-height: 100vh;
         }
         .navbar {
-            background: linear-gradient(90deg, #1a73e8, #4285f4);
-            padding: 0.4rem; /* Ajustar padding para compacidad */
+            background: linear-gradient(90deg, #ff6a00, #ee0979);
+            padding: 0.8rem;
         }
-        .navbar-brand {
-            font-size: 1.5rem;
-            font-weight: bold;
-            color: #fff !important;
-            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
-            flex-grow: 1;
-            text-align: center;
+        .card {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+            margin-bottom: 1rem;
         }
-        .navbar-nav .nav-link {
-            font-size: 0.85rem;
-            padding: 0.5rem;
-            font-weight: 500;
-            color: #fff !important;
+        .card-header {
+            background: linear-gradient(90deg, #6a0572, #450034);
+            color: #fff;
+        }
+        .btn-primary {
+            background: linear-gradient(90deg, #3f5efb, #fc466b);
         }
         .btn-logout {
-            font-size: 0.85rem;
             color: #fff;
             background-color: #f44336;
             border: none;
-            padding: 0.4rem 0.8rem;
-            border-radius: 4px;
+            padding: 0.5rem 1rem;
+            border-radius: 5px;
             transition: background-color 0.3s ease;
         }
         .btn-logout:hover {
             background-color: #d32f2f;
         }
-        .card {
-            border-radius: 8px;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-            margin-bottom: 1rem;
-        }
-        .card-header {
-            font-size: 1rem;
-            font-weight: bold;
-            background: #1a73e8;
-            color: #fff;
-            padding: 0.6rem;
-        }
-        .card-body {
-            padding: 0.8rem;
-        }
-        h3, h5 {
-            font-size: 1rem;
-            font-weight: bold;
-            color: #343a40;
-        }
-        .form-control {
-            font-size: 0.9rem;
-            padding: 0.4rem 0.6rem;
-        }
-        .btn-primary, .btn-secondary {
-            font-size: 0.85rem;
-            padding: 0.4rem 0.6rem;
-        }
-        .table {
-            font-size: 0.85rem;
-        }
-        .table th {
-            font-size: 0.85rem;
-            background: #1a73e8;
-            color: #fff;
-        }
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
+        .table-container {
+            max-height: 300px;
+            overflow-y: auto;
+            margin-top: 1rem;
         }
     </style>
 </head>
-<body>
+
+<script>
+    let productChart; // Se declara una vez y se reutiliza
+
+    // Función para inicializar el gráfico
+    function initializeChart(data) {
+        const ctx = document.getElementById('productChart').getContext('2d');
+        productChart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: data.map(product => product.title), // Nombres en el eje X
+                datasets: [
+                    {
+                        label: 'Precio ($)',
+                        data: data.map(product => product.price), // Precios
+                        backgroundColor: 'rgba(54, 162, 235, 0.5)',
+                        borderColor: 'rgba(54, 162, 235, 1)',
+                        borderWidth: 1,
+                    },
+                    {
+                        label: 'Existencias',
+                        data: data.map(product => product.stock), // Existencias
+                        backgroundColor: 'rgba(255, 99, 132, 0.5)',
+                        borderColor: 'rgba(255, 99, 132, 1)',
+                        borderWidth: 1,
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                        labels: {
+                            color: '#fff'
+                        }
+                    }
+                },
+                scales: {
+                    x: { 
+                        ticks: { color: '#fff' }
+                    },
+                    y: {
+                        ticks: { 
+                            color: '#fff'
+                        },
+                        beginAtZero: true,
+                        max: 1000 // Define un límite máximo fijo de 1000 en el eje Y 
+                        
+                    }
+                }
+            }
+        });
+    }
+
+  // Actualizar el gráfico con nuevos datos
+function updateChart(data) {
+    if (productChart) {
+        productChart.data.labels = data.map(product => product.title);
+        productChart.data.datasets[0].data = data.map(product => product.price);
+        productChart.data.datasets[1].data = data.map(product => product.stock);
+        productChart.options.scales.y.max = 1000; // Define el máximo del eje Y como 1000 pesos
+        productChart.update();
+    }
+}
+
+
+    // Función para cargar datos desde el servidor
+    async function loadChartData() {
+        try {
+            const response = await fetch('/api/products'); // Cambia esta URL según tu endpoint
+            if (!response.ok) {
+                throw new Error(`Error en la solicitud: ${response.status}`);
+            }
+
+            const data = await response.json();
+
+            if (!Array.isArray(data)) {
+                throw new Error('Los datos recibidos no tienen el formato esperado.');
+            }
+
+            if (productChart) {
+                // Actualiza el gráfico existente
+                updateChart(data);
+            } else {
+                // Inicializa el gráfico si no existe
+                initializeChart(data);
+            }
+        } catch (error) {
+            console.error('Error al cargar los datos del gráfico:', error);
+        }
+    }
+
+    // Cargar datos y actualizar el gráfico al cargar la página
+    document.addEventListener('DOMContentLoaded', loadChartData);
+</script>
+
+
     <!-- Barra de navegación -->
     <nav class="navbar navbar-expand-lg">
-        <div class="container-fluid d-flex align-items-center">
-            <ul class="navbar-nav me-auto">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="#">Akira</a>
+            <ul class="navbar-nav ms-auto">
                 <li class="nav-item">
-                    <a class="nav-link active" href="#productos"><i class="fas fa-box"></i> Productos</a>
+                    <a class="nav-link" href="#productos"><i class="fas fa-box"></i> Productos</a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link" href="#graficos"><i class="fas fa-chart-bar"></i> Gráficos</a>
                 </li>
             </ul>
-            <a class="navbar-brand" href="#">
-                <i class="fas fa-star"></i> Akira
-            </a>
-            <button class="btn btn-logout ms-auto" onclick="window.location.href='/logout'">
-                <i class="fas fa-sign-out-alt"></i> Cerrar Sesión
-            </button>
+            <button class="btn btn-logout" onclick="window.location.href='/logout';">Cerrar Sesión</button>
         </div>
     </nav>
-</body>
-</html>
 
     <!-- Contenido principal -->
     <div class="container mt-2">
@@ -162,7 +221,6 @@
                         </tr>
                     </thead>
                     <tbody id="productsTableBody">
-                        <!-- Datos dinámicos renderizados desde Flask -->
                         {% for product in products %}
                         <tr>
                             <td>{{ product.id }}</td>
@@ -177,9 +235,13 @@
             </div>
         </div>
     </div>
+    <!-- Scripts -->
+    <script>
+        // Tu lógica aquí...
+    </script>
 </body>
 </html>
-
+        
 <!-- Subir Productos desde Excel -->
 <div class="card shadow-sm mt-3" style="max-width: 350px; margin: auto;">
     <div class="card-header bg-primary text-white text-center py-2">
@@ -234,44 +296,51 @@
 </script>
 
 
-<!-- Crear Producto Manualmente -->
-<div class="card shadow-sm mt-4">
-    <div class="card-header bg-success text-white d-flex justify-content-between align-items-center">
-        <h5 class="mb-0"><i class="fas fa-plus-circle"></i> Crear Producto Manualmente</h5>
-        <small class="text-light">Complete todos los campos para agregar un nuevo producto</small>
-    </div>
-    <div class="card-body">
-        <form id="createProductForm">
-            <div class="row g-3">
-                <div class="col-md-6">
-                    <label for="title" class="form-label"><i class="fas fa-tag"></i> Título</label>
-                    <input type="text" id="title" class="form-control" placeholder="Ejemplo: Playera Akaza" required>
+<div class="container my-5">
+    <!-- Crear Producto Manualmente -->
+    <div class="card shadow-lg p-4">
+        <div class="card-header bg-primary text-white d-flex flex-column align-items-start">
+            <h5 class="mb-1">
+                <i class="fas fa-plus-circle"></i> Crear Producto Manualmente
+            </h5>
+            <small class="text-light">Complete todos los campos para agregar un nuevo producto</small>
+        </div>
+        <div class="card-body">
+            <form id="createProductForm">
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label for="title" class="form-label"><i class="fas fa-tag"></i> Título</label>
+                        <input type="text" id="title" class="form-control" placeholder="Ejemplo: Playera Akaza" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label for="sku" class="form-label"><i class="fas fa-barcode"></i> SKU</label>
+                        <input type="text" id="sku" class="form-control" placeholder="Ejemplo: SKU123" required>
+                    </div>
+                    <div class="col-md-4">
+                        <label for="price" class="form-label"><i class="fas fa-dollar-sign"></i> Precio</label>
+                        <input type="number" id="price" class="form-control" placeholder="Ejemplo: 300.00" required min="1" step="0.01">
+                    </div>
+                    <div class="col-md-4">
+                        <label for="inventory_quantity" class="form-label"><i class="fas fa-boxes"></i> Existencia</label>
+                        <input type="number" id="inventory_quantity" class="form-control" placeholder="Ejemplo: 50" required min="0">
+                    </div>
+                    <div class="col-md-4">
+                        <label for="description" class="form-label"><i class="fas fa-info-circle"></i> Descripción</label>
+                        <textarea id="description" class="form-control" placeholder="Ejemplo: Playera deportiva" rows="2"></textarea>
+                    </div>
                 </div>
-                <div class="col-md-6">
-                    <label for="sku" class="form-label"><i class="fas fa-barcode"></i> SKU</label>
-                    <input type="text" id="sku" class="form-control" placeholder="Ejemplo: SKU123" required>
+                <div class="text-end mt-4">
+                    <button type="submit" class="btn btn-primary px-4">
+                        <i class="fas fa-save"></i> Crear Producto
+                    </button>
                 </div>
-                <div class="col-md-4">
-                    <label for="price" class="form-label"><i class="fas fa-dollar-sign"></i> Precio</label>
-                    <input type="number" id="price" class="form-control" placeholder="Ejemplo: 300.00" required min="1" step="0.01">
-                </div>
-                <div class="col-md-4">
-                    <label for="inventory_quantity" class="form-label"><i class="fas fa-boxes"></i> Existencia</label>
-                    <input type="number" id="inventory_quantity" class="form-control" placeholder="Ejemplo: 50" required min="0">
-                </div>
-                <div class="col-md-4">
-                    <label for="description" class="form-label"><i class="fas fa-info-circle"></i> Descripción</label>
-                    <textarea id="description" class="form-control" placeholder="Ejemplo: Playera deportiva" rows="1"></textarea>
-                </div>
-            </div>
-            <div class="text-end mt-3">
-                <button type="submit" class="btn btn-success">
-                    <i class="fas fa-save"></i> Crear Producto
-                </button>
-            </div>
-        </form>
+            </form>
+        </div>
     </div>
 </div>
+
+
+
 
 <script>
     document.getElementById('createProductForm').addEventListener('submit', async function (e) {
@@ -325,127 +394,137 @@
 
 
 <!-- Gráficos -->
-<div class="container mt-5" id="graficos">
-    <h3 class="text-center text-primary mb-4"><i class="fas fa-chart-bar"></i> Gráficos de Productos</h3>
+<div class="container mt-4" id="graficos">
     <div class="card shadow-sm">
-        <div class="card-header bg-primary text-white">
-            <h5 class="mb-0"><i class="fas fa-chart-area"></i> Comparativa: Precios y Existencias</h5>
+        <div class="card-header text-white" style="background: #6a0572;">
+            Comparativa: Precios y Existencias
         </div>
-        <div class="card-body" style="height: 500px;"> <!-- Contenedor con altura definida -->
-            <canvas id="productChart" style="width: 100%; height: 100%;"></canvas> <!-- Tamaño del canvas -->
+        <div class="card-body">
+            <canvas id="productChart"></canvas>
         </div>
     </div>
 </div>
 
 <script>
-    // Datos dinámicos desde Flask
-    const products = {{ products | tojson | safe }}; // Datos desde el backend
-    const labels = products.map(product => product.title); // Nombres de productos
-    const prices = products.map(product => parseFloat(product.variants[0].price)); // Precios de los productos
-    const stocks = products.map(product => product.variants[0].available || 0); // Existencias de los productos
+    let productChart;
 
-    // Configuración del gráfico
+    // Función para inicializar el gráfico
+function initializeChart(data) {
     const ctx = document.getElementById('productChart').getContext('2d');
-    const productChart = new Chart(ctx, {
+    productChart = new Chart(ctx, {
         type: 'bar',
         data: {
-            labels: labels, // Etiquetas para el eje X
+            labels: data.map(product => product.name), // Eje X: nombres de los productos
             datasets: [
                 {
-                    label: 'Precios ($)',
-                    data: prices,
-                    backgroundColor: 'rgba(54, 162, 235, 0.7)', // Azul para precios
+                    label: 'Precio ($)',
+                    data: data.map(product => product.price), // Datos de precios
+                    backgroundColor: 'rgba(54, 162, 235, 0.5)',
                     borderColor: 'rgba(54, 162, 235, 1)',
                     borderWidth: 1,
-                    yAxisID: 'y',
                 },
                 {
                     label: 'Existencias',
-                    data: stocks,
-                    backgroundColor: 'rgba(75, 192, 192, 0.7)', // Verde para existencias
-                    borderColor: 'rgba(75, 192, 192, 1)',
+                    data: data.map(product => product.stock), // Datos de existencias
+                    backgroundColor: 'rgba(255, 99, 132, 0.5)',
+                    borderColor: 'rgba(255, 99, 132, 1)',
                     borderWidth: 1,
-                    yAxisID: 'y1',
                 },
             ],
         },
         options: {
             responsive: true,
-            maintainAspectRatio: false, // Ajustar al contenedor
             plugins: {
                 legend: {
-                    position: 'top', // Leyenda en la parte superior
+                    position: 'top',
                     labels: {
-                        font: {
-                            size: 14, // Tamaño de la fuente en la leyenda
-                        },
-                        padding: 20, // Espaciado alrededor de las etiquetas de la leyenda
-                    },
-                },
-                tooltip: {
-                    callbacks: {
-                        label: function (context) {
-                            const value = context.raw;
-                            if (context.dataset.label === 'Precios ($)') {
-                                return context.dataset.label + ': $' + value.toFixed(2);
-                            }
-                            return context.dataset.label + ': ' + value + ' unidades';
-                        },
+                        color: '#fff',
                     },
                 },
             },
             scales: {
-                y: {
-                    type: 'linear',
-                    position: 'left',
-                    title: {
-                        display: true,
-                        text: 'Precios ($)',
-                        font: {
-                            size: 14,
-                            weight: 'bold',
-                        },
-                    },
-                    ticks: {
-                        callback: function (value) {
-                            return '$' + value;
-                        },
-                    },
-                    grid: {
-                        color: 'rgba(54, 162, 235, 0.2)',
-                    },
-                },
-                y1: {
-                    type: 'linear',
-                    position: 'right',
-                    title: {
-                        display: true,
-                        text: 'Existencias (unidades)',
-                        font: {
-                            size: 14,
-                            weight: 'bold',
-                        },
-                    },
-                    grid: {
-                        drawOnChartArea: false, // Ocultar líneas de cuadrícula para este eje
-                    },
-                },
                 x: {
-                    title: {
-                        display: true,
-                        text: 'Productos',
-                        font: {
-                            size: 14,
-                            weight: 'bold',
-                        },
-                    },
                     ticks: {
-                        maxRotation: 45, // Rotación máxima de etiquetas
-                        minRotation: 0,
+                        color: '#fff',
+                    },
+                },
+                y: {
+                    ticks: {
+                        color: '#fff',
+                        beginAtZero: true, // Comienza desde 0
                     },
                 },
             },
         },
+    });
+}
+
+// Función para cargar datos desde el servidor
+async function loadChartData() {
+    try {
+        const response = await fetch('/api/products'); // Cambia esta URL según tu endpoint
+        if (!response.ok) {
+            throw new Error(`Error en la solicitud: ${response.status}`);
+        }
+
+        const data = await response.json();
+
+        if (!Array.isArray(data)) {
+            throw new Error('Los datos recibidos no tienen el formato esperado.');
+        }
+
+        // Verifica si el gráfico ya existe
+        if (productChart) {
+            // Actualiza el gráfico existente
+            productChart.data.labels = data.map(product => product.name);
+            productChart.data.datasets[0].data = data.map(product => product.price);
+            productChart.data.datasets[1].data = data.map(product => product.stock);
+            productChart.update(); // Refresca el gráfico
+        } else {
+            // Inicializa el gráfico si no existe
+            initializeChart(data);
+        }
+    } catch (error) {
+        console.error('Error al cargar los datos del gráfico:', error);
+    }
+}
+
+// Cargar datos y actualizar el gráfico al cargar la página
+document.addEventListener('DOMContentLoaded', loadChartData);
+
+
+    // Llama a la función para cargar datos al cargar la página
+    document.addEventListener('DOMContentLoaded', loadChartData);
+
+    // Ejemplo: Actualiza datos al agregar un producto
+    document.getElementById('createProductForm').addEventListener('submit', async function (e) {
+        e.preventDefault();
+        const title = document.getElementById('title').value.trim();
+        const sku = document.getElementById('sku').value.trim();
+        const price = parseFloat(document.getElementById('price').value);
+        const stock = parseInt(document.getElementById('inventory_quantity').value);
+        const description = document.getElementById('description').value.trim();
+
+        if (title && sku && !isNaN(price) && !isNaN(stock)) {
+            try {
+                const response = await fetch('/api/add_product', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ title, sku, price, stock, description }),
+                });
+                const result = await response.json();
+                if (response.ok) {
+                    alert('Producto agregado correctamente');
+                    loadChartData(); // Actualiza el gráfico
+                } else {
+                    alert(result.message || 'Error al agregar el producto');
+                }
+            } catch (error) {
+                console.error('Error al agregar producto:', error);
+            }
+        } else {
+            alert('Por favor, completa todos los campos correctamente');
+        }
     });
 </script>
 
@@ -547,6 +626,8 @@
         updateTable(allProducts); // Mostrar todos los productos inicialmente
     });
 </script>
+
+
 
 
 
